@@ -8,27 +8,37 @@ const getValue = async (input_date, input_city, input_province) => {
     alert('Please input date')
     return
   }
-  const res = await axios.post('http://10.206.55.227:8080/api/predict/predictByYear', {
+
+  // 如果输入了城市，则只显示一条
+  if (input_city !== '') {
+    const res = await axios.post('http://10.206.55.227:8080/api/predict/predictByYear', {
     date: input_date,
     city: input_city,
     province: input_province
   })
-  // 如果输入了城市，则只显示一条
-  if (input_city !== '') {
     price.value[0] = res.data[0].Price
     charts_city.value[0] = res.data[0].City
     return
   }
-  if (buttonflag.value === false) {
-    alert('请输入城市')
-  } else {
+  // 如果未输入城市，则显示十条
+  if(input_city === ''){
+    const res_ten = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
+      date: input_date,
+      fromIndex: 0,
+      toIndex:9
+    })
     for (let i = 0; i < 10; i++) {
-      price.value[i] = res.data[i].Price
-      charts_city.value[i] = res.data[i].City
+      price.value[i] = res_ten.data[i].Price
+      charts_city.value[i] = res_ten.data[i].City
     }
+    buttonflag.value = true
   }
+  // if (buttonflag.value === false) {
+  //   alert('请输入城市')
+  // } else {
+
+  // }
   funcflag.value = true
-  buttonflag.value = true
   console.log(res);
 
   // price.value = res.data[0].price
@@ -38,8 +48,17 @@ const getValue = async (input_date, input_city, input_province) => {
 }
 
 // 下一页
-const nextPage = () => {
-
+const nextPage = async() => {
+    const res_ten = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
+      date: input_date,
+      fromIndex: 0,
+      toIndex:9
+    })
+    for (let i = 0; i < 10; i++) {
+      price.value[i] = res_ten.data[i].Price
+      charts_city.value[i] = res_ten.data[i].City
+    }
+    buttonflag.value = true
 }
 // input绑定数据
 const input_date = ref('')
@@ -104,13 +123,14 @@ const chartOptions = {
         <input type="text" class="rounded-input" placeholder="Please type province" v-model="input_province">
         <el-button type="warning" round @click="getValue(input_date, input_city, input_province)" class="el_button"
           size="large">Submit</el-button>
-        <el-button v-if="buttonflag" type="warning" round @click="getValue(input_date, input_city, input_province)"
-          class="el_button" size="large">Next</el-button>
+        <el-button v-if="buttonflag" type="warning" round @click="nextPage(input_date)"
+          class="el_button" size="large" >Next</el-button>
       </div>
     </div>
   </div>
 
 </template>
+
 <style>
 .el_button {
   margin-left: 10px
