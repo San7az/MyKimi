@@ -17,7 +17,10 @@ const getValue = async (input_date, input_city, input_province) => {
   if (input_city !== '') {
     price.value[0] = res.data[0].Price
     charts_city.value[0] = res.data[0].City
-    // 如果未输入城市，则显示十条
+    return
+  }
+  if (buttonflag.value === false) {
+    alert('请输入城市')
   } else {
     for (let i = 0; i < 10; i++) {
       price.value[i] = res.data[i].Price
