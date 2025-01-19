@@ -2,10 +2,11 @@
 import axios from "axios"
 import { ref } from 'vue'
 
+
 // 获取后台数据 -- 输入日期和城市
 const getValue = async (input_date, input_city, input_province) => {
   if (input_date === '') {
-    alert('Please input date')
+    ElMessage.error('Please type date')
     return
   }
 
@@ -72,6 +73,7 @@ const buttonflag = ref(false)
 
 // 初始化echarts
 import ECharts from '@/components/Echarts.vue';
+import { ElMessage } from "element-plus"
 
 
 const chartOptions = {
@@ -103,7 +105,7 @@ const chartOptions = {
 <template>
   <div>
     <div class="show_img">
-      <img src="@/assets/example.jpg" alt="示例图片" class="custom_img">
+      <img src="@/assets/huasheng.jpg"  class="custom_img">
     </div>
     <div class="container_charts" v-if="funcflag">
 
@@ -181,13 +183,15 @@ const chartOptions = {
   text-align: center;
   align-items: center;
   width: 100%;
-  height: 50px;
+  height: 100px;
   display: grid;
 }
 
 .custom_img {
-  width: 100%;
-  height: 30px;
-  border-radius: 10px;
+  width: 100px;
+  height: 100px;
+  border-radius:50%;
+  object-fit: cover;
+  
 }
 </style>
