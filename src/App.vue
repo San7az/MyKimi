@@ -5,6 +5,7 @@ import { ref } from 'vue'
 
 // 获取后台数据 -- 输入日期和城市
 const getValue = async (input_date, input_city, input_province) => {
+
   if (input_date === '') {
     contentP.value = 'Please Type Date~'
     return
@@ -12,35 +13,41 @@ const getValue = async (input_date, input_city, input_province) => {
 
   // 如果输入了城市，则只显示一条
   if (input_city !== '') {
-    const res = await axios.post('http://10.206.55.227:8080/api/predict/predictByYear', {
+    const res = await axios.post('http://192.168.0.20:8080/api/predict/predictByYear', {
     date: input_date,
     city: input_city,
     province: input_province
   })
+
     price.value[0] = res.data[0].Price
     charts_city.value[0] = res.data[0].City
+    
+    funcflag.value = true
+     contentP.value = ` house price of is ${price.value[0]}￥`
+     isdisabled.value=true
     return
   }
   // 如果未输入城市，则显示十条
   if(input_city === ''){
-    const res_ten = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
+    const ten_res = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
       date: input_date,
       fromIndex: 0,
-      toIndex:9
+      toIndex: 9
     })
-    for (let i = 0; i < 10; i++) {
-      price.value[i] = res_ten.data[i].Price
-      charts_city.value[i] = res_ten.data[i].City
+    console.log(ten_res);
+    for(let i = 0; i < 10; i++){
+      price.value[i] = ten_res.data[i].price
+      charts_city.value[i] = ten_res.data[i].city
     }
     buttonflag.value = true
+    funcflag.value = true
+    contentP.value = `These are different house price from 10 cities~`
   }
   // if (buttonflag.value === false) {
   //   alert('请输入城市')
   // } else {
 
   // }
-  funcflag.value = true
-  console.log(res);
 
   // price.value = res.data[0].price
   // console.log(price.value);
@@ -49,17 +56,34 @@ const getValue = async (input_date, input_city, input_province) => {
 }
 
 // 下一页
-const nextPage = async() => {
+
+const nextPage = async(input_date) => {
+  const randomParam1 = Math.floor(Math.random() * 291);
+  const randomParam2 = randomParam1 + 9
     const res_ten = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
       date: input_date,
-      fromIndex: 0,
-      toIndex:9
+      fromIndex: randomParam1,
+      toIndex: randomParam2
     })
     for (let i = 0; i < 10; i++) {
-      price.value[i] = res_ten.data[i].Price
-      charts_city.value[i] = res_ten.data[i].City
+      price.value[i] = res_ten.data[i].price
+      charts_city.value[i] = res_ten.data[i].city
     }
     buttonflag.value = true
+    contentP.value = `These are another 10 cities' house price~`
+}
+// 添加到当前图表
+const addCity = async (input_date,input_city) => {
+  const resFirst = await axios.post('http://192.168.0.20:8080/api/predict/predictByYear',{
+    date: input_date,
+    city: input_city
+  })
+  console.log(resFirst);
+  
+  const addPosition = price.value.length
+  price.value[addPosition] = resFirst.data[0].Price
+  charts_city.value[addPosition] = input_city
+  contentP.value = 'Add Success!~'
 }
 // input绑定数据
 const input_date = ref('')
@@ -69,8 +93,9 @@ const price = ref([])
 const charts_city = ref([])
 const funcflag = ref(false)
 const buttonflag = ref(false)
-const contentP = ref('Hello , you can ask me something about house price !~')
-
+const contentP = ref('Hello, I am peanut, you can ask me something about house price !~')
+// 禁用按钮
+const isdisabled=ref(false)
 
 // 初始化echarts
 import ECharts from '@/components/Echarts.vue';
@@ -107,15 +132,16 @@ const chartOptions = {
     <div class="show_img">
       <img src="@/assets/peanut1.jpg"  class="custom_img">
     </div>
+    <div  >
+    <div class="container_text">
+      <p> {{ contentP }}</p>
+    </div>
       <div class="container_charts" v-if="funcflag">
 
 <!-- <div class="show_charts">我是echarts</div> -->
       <ECharts :options="chartOptions"></ECharts>
   </div>
-  <div  v-else>
-    <div class="container_text">
-      <p> {{ contentP }}</p>
-    </div>
+  
   </div>
       
  
@@ -131,10 +157,12 @@ const chartOptions = {
       </div>
       <div>
         <input type="text" class="rounded-input" placeholder="Please type province" v-model="input_province">
-        <el-button type="warning" round @click="getValue(input_date, input_city, input_province)" class="el_button"
+        <el-button  type="warning" round @click="getValue(input_date, input_city, input_province)" class="el_button"
           size="large">Submit</el-button>
-        <el-button v-if="buttonflag" type="warning" round @click="nextPage(input_date)"
-          class="el_button" size="large" >Next</el-button>
+        <el-button  v-if="buttonflag" type="warning" round @click="nextPage(input_date)"
+          class="el_button" size="large" >Next Page</el-button>
+          <el-button  v-if="isdisabled" type="warning" round @click="addCity(input_date,input_city)"
+          class="el_button" size="large" >Add City</el-button>
       </div>
     </div>
   </div>
@@ -164,7 +192,7 @@ const chartOptions = {
 .container_charts {
   width: 500px;
   height: 300px;
-  background-color: black;
+  background-color: white;
   display: flex;
   justify-content: center;
   align-content: center;
