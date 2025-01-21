@@ -74,7 +74,6 @@ const contentP = ref('Hello , you can ask me something about house price !~')
 
 // 初始化echarts
 import ECharts from '@/components/Echarts.vue';
-import { ElMessage } from "element-plus"
 
 
 const chartOptions = {
