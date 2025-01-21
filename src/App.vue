@@ -6,7 +6,7 @@ import { ref } from 'vue'
 // 获取后台数据 -- 输入日期和城市
 const getValue = async (input_date, input_city, input_province) => {
   if (input_date === '') {
-    ElMessage.error('Please type date')
+    contentP.value = 'Please Type Date~'
     return
   }
 
@@ -69,6 +69,7 @@ const price = ref([])
 const charts_city = ref([])
 const funcflag = ref(false)
 const buttonflag = ref(false)
+const contentP = ref('Hello , you can ask me something about house price !~')
 
 
 // 初始化echarts
@@ -105,13 +106,21 @@ const chartOptions = {
 <template>
   <div>
     <div class="show_img">
-      <img src="@/assets/huasheng.jpg"  class="custom_img">
+      <img src="@/assets/peanut1.jpg"  class="custom_img">
     </div>
-    <div class="container_charts" v-if="funcflag">
+      <div class="container_charts" v-if="funcflag">
 
-      <!-- <div class="show_charts">我是echarts</div> -->
+<!-- <div class="show_charts">我是echarts</div> -->
       <ECharts :options="chartOptions"></ECharts>
+  </div>
+  <div  v-else>
+    <div class="container_text">
+      <p> {{ contentP }}</p>
     </div>
+  </div>
+      
+ 
+
     <div class="search_input">
 
       <!-- <el-input v-model="input" style="width: 240px" placeholder="Please type year" :style="{ borderRadius: '90px' }" /> -->
@@ -185,6 +194,7 @@ const chartOptions = {
   width: 100%;
   height: 100px;
   display: grid;
+  margin: 8px;
 }
 
 .custom_img {
@@ -193,5 +203,9 @@ const chartOptions = {
   border-radius:50%;
   object-fit: cover;
   
+}
+.container_text{
+  text-align: center;
+  font-size: large;
 }
 </style>
