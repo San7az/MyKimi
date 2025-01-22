@@ -5,12 +5,13 @@ import { ref } from 'vue'
 
 // 获取后台数据 -- 输入日期和城市
 const getValue = async (input_date, input_city, input_province) => {
-
+  
   if (input_date === '') {
     contentP.value = 'Please Type Date~'
     return
   }
-
+  funcflag.value = true
+  loading.value = true
   // 如果输入了城市，则只显示一条
   if (input_city !== '') {
     const res = await axios.post('http://192.168.0.20:8080/api/predict/predictByYear', {
@@ -21,9 +22,8 @@ const getValue = async (input_date, input_city, input_province) => {
 
     price.value[0] = res.data[0].Price
     charts_city.value[0] = res.data[0].City
-    
-    funcflag.value = true
-     contentP.value = ` house price of is ${price.value[0]}￥`
+    loading.value = false
+     contentP.value = `The house price is ${price.value[0]}￥/㎡`
      isdisabled.value=true
     return
   }
@@ -32,16 +32,16 @@ const getValue = async (input_date, input_city, input_province) => {
     const ten_res = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
       date: input_date,
       fromIndex: 0,
-      toIndex: 9
+      toIndex: 5
     })
     console.log(ten_res);
-    for(let i = 0; i < 10; i++){
+    for(let i = 0; i < 6; i++){
       price.value[i] = ten_res.data[i].price
       charts_city.value[i] = ten_res.data[i].city
     }
+    loading.value = false
     buttonflag.value = true
-    funcflag.value = true
-    contentP.value = `These are different house price from 10 cities~`
+    contentP.value = `These are different house price from 6 cities~`
   }
   // if (buttonflag.value === false) {
   //   alert('请输入城市')
@@ -58,19 +58,21 @@ const getValue = async (input_date, input_city, input_province) => {
 // 下一页
 
 const nextPage = async(input_date) => {
+  loading.value = true
   const randomParam1 = Math.floor(Math.random() * 291);
-  const randomParam2 = randomParam1 + 9
+  const randomParam2 = randomParam1 + 6
     const res_ten = await axios.post('http://192.168.0.20:8080/api/predict/predictByDate',{
       date: input_date,
       fromIndex: randomParam1,
       toIndex: randomParam2
     })
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 6; i++) {
       price.value[i] = res_ten.data[i].price
       charts_city.value[i] = res_ten.data[i].city
     }
+    loading.value = false
     buttonflag.value = true
-    contentP.value = `These are another 10 cities' house price~`
+    contentP.value = `These are another 6 cities' house price~`
 }
 // 添加到当前图表
 const addCity = async (input_date,input_city) => {
@@ -96,6 +98,8 @@ const buttonflag = ref(false)
 const contentP = ref('Hello, I am peanut, you can ask me something about house price !~')
 // 禁用按钮
 const isdisabled=ref(false)
+// 加载效果
+const loading = ref(false)
 
 // 初始化echarts
 import ECharts from '@/components/Echarts.vue';
@@ -136,7 +140,7 @@ const chartOptions = {
     <div class="container_text">
       <p> {{ contentP }}</p>
     </div>
-      <div class="container_charts" v-if="funcflag">
+      <div class="container_charts" v-if="funcflag" v-loading="loading">
 
 <!-- <div class="show_charts">我是echarts</div> -->
       <ECharts :options="chartOptions"></ECharts>
