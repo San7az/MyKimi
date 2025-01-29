@@ -100,6 +100,8 @@ const contentP = ref('Hello, I am peanut, you can ask me something about house p
 const isdisabled=ref(false)
 // 加载效果
 const loading = ref(false)
+const demo=ref(0)
+console.log(demo);
 
 // 初始化echarts
 import ECharts from '@/components/Echarts.vue';
